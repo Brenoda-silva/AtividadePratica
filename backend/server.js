@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+
+const alunos = "alunos.json"
 
 const app = express();
 app.use(express.json());
@@ -10,12 +13,15 @@ const SECRET = "senac2026";
 
 const usuario = { email: "admin@senac.com", senha: "123456" };
 
-let alunos = [{ id: 1, nome: "João" }];
+// let alunos = [{ id: 1, nome: "João" }];
 
 function autenticar(req,res,next){
  const token=req.headers.authorization;
+
+    
+
  if(!token){return res.status(401).json({erro:'Token não enviado'});}
- try{ jwt.verify(token,SECRET); next(); }
+ try{ console.log("teste:", token, SECRET); jwt.verify(token,SECRET); next(); }
  catch(e){ return res.status(401).json({erro:'Token inválido'}); }
 }
 
@@ -28,7 +34,11 @@ app.post('/login',(req,res)=>{
  return res.status(401).json({erro:'Login inválido'});
 });
 
-app.get('/alunos',autenticar,(req,res)=>res.json(alunos));
+app.get('/alunos', autenticar, (req,res)=>{
+    const dados = fs.readFileSync(alunos);
+    const alunoDados = JSON.parse(dados);
+    res.json(alunoDados);
+});
 
 app.post('/alunos',autenticar,(req,res)=>{
  const novoAluno={id:Date.now(),nome:req.body.nome};
