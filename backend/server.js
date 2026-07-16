@@ -13,15 +13,11 @@ const SECRET = "senac2026";
 
 const usuario = { email: "admin@senac.com", senha: "123456" };
 
-// let alunos = [{ id: 1, nome: "João" }];
-
 function autenticar(req,res,next){
  const token=req.headers.authorization;
 
-    
-
  if(!token){return res.status(401).json({erro:'Token não enviado'});}
- try{ console.log("teste:", token, SECRET); jwt.verify(token,SECRET); next(); }
+ try{ jwt.verify(token,SECRET); next(); }
  catch(e){ return res.status(401).json({erro:'Token inválido'}); }
 }
 
@@ -40,10 +36,25 @@ app.get('/alunos', autenticar, (req,res)=>{
     res.json(alunoDados);
 });
 
-app.post('/alunos',autenticar,(req,res)=>{
- const novoAluno={id:Date.now(),nome:req.body.nome};
- alunos.push(novoAluno);
- res.status(201).json(novoAluno);
+// app.post('/alunos',autenticar,(req,res)=>{
+//  const novoAluno={id:Date.now(),nome:req.body.nome};
+//  alunos.push(novoAluno);
+//  res.status(201).json(novoAluno);
+// });
+
+app.post("/alunos", autenticar, (req, res) => {
+    const dados = fs.readFileSync(alunos);
+    const alunoDados = JSON.parse(dados);
+
+    const novoAluno = {
+        id: Date.now(),
+        ...req.body
+    };
+
+    alunoDados.push(novoAluno);
+    fs.writeFileSync(alunos, JSON.stringify(alunoDados, null, 2));
+
+    res.json(novoAluno);
 });
 
 app.put('/alunos/:id',autenticar,(req,res)=>{
